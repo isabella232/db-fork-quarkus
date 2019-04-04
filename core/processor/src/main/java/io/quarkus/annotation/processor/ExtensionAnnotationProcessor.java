@@ -39,7 +39,9 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -168,7 +170,7 @@ public class ExtensionAnnotationProcessor extends AbstractProcessor {
         }
         Collection<String> bscListClasses = new TreeSet<>();
         Collection<String> crListClasses = new TreeSet<>();
-        Properties javaDocProperties = new Properties();
+        Map<String, String> javaDocProperties = new LinkedHashMap<>();
         try {
             Files.walkFileTree(path, new FileVisitor<Path>() {
                 public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) {
@@ -213,7 +215,7 @@ public class ExtensionAnnotationProcessor extends AbstractProcessor {
                         }
                         final Set<String> names = p.stringPropertyNames();
                         for (String name : names) {
-                            javaDocProperties.setProperty(name, p.getProperty(name));
+                            javaDocProperties.put(name, p.getProperty(name));
                         }
                     }
                     return FileVisitResult.CONTINUE;
@@ -279,7 +281,10 @@ public class ExtensionAnnotationProcessor extends AbstractProcessor {
                 try (BufferedOutputStream bos = new BufferedOutputStream(os)) {
                     try (OutputStreamWriter osw = new OutputStreamWriter(bos, StandardCharsets.UTF_8)) {
                         try (BufferedWriter bw = new BufferedWriter(osw)) {
-                            javaDocProperties.store(bw, "");
+                            for (Map.Entry<String, String> e : javaDocProperties.entrySet()) {
+                                bw.write(e.getKey() + "=" + e.getValue());
+                                bw.newLine();
+                            }
                         }
                     }
                 }
